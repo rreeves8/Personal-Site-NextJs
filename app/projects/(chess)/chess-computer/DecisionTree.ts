@@ -1,4 +1,5 @@
 import ChessBoard, { cloneChess } from "./Chess";
+import { Peice } from "./Peice";
 import { Board, Move, Player } from "./types";
 
 export type Children<T> = Array<TreeNode<T>>;
@@ -33,7 +34,7 @@ export class TreeNode<T> {
 }
 
 export const getAiMove = (chessBoard: ChessBoard) => {
-    let decisionTree = new DecisionTree(chessBoard, 1);
+    let decisionTree = new DecisionTree(chessBoard, 40);
 
     let root = decisionTree.root;
 };
@@ -55,7 +56,22 @@ export default class DecisionTree {
 
         allMoves.forEach((move) => {
             let childBoard = new ChessBoard(...cloneChess(board.getPeices()), turn);
-            let wasMade = childBoard.makeMove(move.oldPos.i, move.oldPos.j, move.newPos.i, move.newPos.j, turn);
+            let i = move.oldPos.i;
+            let j = move.oldPos.j;
+            let nextI = move.newPos.i;
+            let nextJ = move.newPos.j;
+
+            let peiceToMove = childBoard.getboard()[i][j];
+
+            if (!(peiceToMove instanceof Peice)) {
+                throw new Error("starting pos is not a peice");
+            }
+
+            let wasMade = childBoard.makeMove(i, j, nextI, nextJ, turn);
+
+            if (childBoard.isChecked()) {
+                throw new Error("checked");
+            }
 
             if (!wasMade) {
                 throw new Error("move wasnt made");
@@ -63,7 +79,7 @@ export default class DecisionTree {
             node.addChild(new TreeNode<ChessBoard>(childBoard));
         });
 
-        if (board.isChecked() || depth > this.maxDepth) {
+        if (board.isChecked() || depth >= this.maxDepth) {
             return;
         } else {
             node.getChildren().forEach((child) => this.buildTree(child, child.getElement().getTurn(), depth + 1));

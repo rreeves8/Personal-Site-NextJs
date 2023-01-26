@@ -49,28 +49,23 @@ export default function Asteriods() {
     };
 
     return (
-        <div>
-            {gameRunning ? (
-                <div>
-                    <text className="font" style={{ color: "white", position: "absolute", marginLeft: "auto", marginRight: "auto" }}>
-                        Use WASD to move, and Space to fire
-                    </text>
-                    <Game quit={stop} />
-                </div>
-            ) : (
-                <div style={{ width: "969px", height: "510px", backgroundColor: "black" }}></div>
-            )}
-            <div style={{ position: "relative" }}>
+        <div style={{ width: "969px", height: "510px", backgroundColor: "black" }}>
+            <div style={{ position: "absolute", marginLeft: "auto" }}>
                 <Button
                     color="primary"
-                    size="lg"
+                    size="small"
                     onClick={() => {
                         changeGameState(!gameRunning);
                     }}
                 >
                     {gameRunning ? "restart" : "start"}
                 </Button>
+
+                <text style={{ color: "white", marginLeft: "1vw" }} className="font">
+                    Use WASD to move, and Space to fire
+                </text>
             </div>
+            {gameRunning ? <Game quit={stop} /> : <></>}
         </div>
     );
 }

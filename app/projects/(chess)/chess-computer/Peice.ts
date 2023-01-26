@@ -1,4 +1,15 @@
-import { inBounds, isDiagonal, isStraight, peiceInTheWay, peiceIsNotSame, positive, pythagrous, toPositive, toVector, validateMove } from "./PeiceLogic";
+import {
+    inBounds,
+    isDiagonal,
+    isStraight,
+    peiceInTheWay,
+    peiceIsNotSame,
+    positive,
+    pythagrous,
+    toPositive,
+    toVector,
+    validateMove,
+} from "./PeiceLogic";
 import { PeiceType, PeiceADT, Player, Board, Move, MoveValidator, Moves } from "./types";
 
 //greasy but whatever
@@ -28,6 +39,7 @@ export class Peice implements PeiceADT {
     getValidMoves(board: Board): Moves {
         let [i, j] = this.getPosition();
         let validMoves = [] as Moves;
+
         let moveValidator = this.validateMove(board);
 
         iterateOverBoard(board, (nextI, nextJ) => {
@@ -72,6 +84,10 @@ export class Peice implements PeiceADT {
     }
 
     isCheck(board: Board, king: Peice): boolean {
+        if (!(king instanceof King)) {
+            throw new Error("king isnt a king or is undefined");
+        }
+
         let moveValidator = this.validateMove(board);
         let kingPositions = king.getPosition();
 
@@ -93,7 +109,11 @@ export class Peice implements PeiceADT {
 }
 
 export class Pawn extends Peice {
-    private hasMoved = false;
+    hasMoved = false;
+
+    reset() {
+        this.hasMoved = false;
+    }
 
     override validateMove(board: Board): MoveValidator {
         return (i: number, j: number, nextI: number, nextJ: number) => {
@@ -164,11 +184,8 @@ export class King extends Peice {
         return (i: number, j: number, nextI: number, nextJ: number) => {
             let vector = toVector(i, j, nextI, nextJ);
             let magnitude = positive(vector);
-            if (!this.hasCastled) {
-                return true;
-            } else {
-                return validateMove(board, i, j, nextI, nextJ) && magnitude.dx <= 1 && magnitude.dy <= 1;
-            }
+
+            return validateMove(board, i, j, nextI, nextJ) && magnitude.dx <= 1 && magnitude.dy <= 1;
         };
     }
 

@@ -78,6 +78,7 @@ export default function BoardComponent({ size }: { size: string }) {
     const [gameLogic, setGameLogic] = useState<ChessBoard>(() => new ChessBoard());
     const [board, setBoard] = useState<Board | undefined>(() => [...gameLogic.getboard()]);
     const [winner, setWinner] = useState<Player | undefined>();
+    const [awaitingAi, setAwaitingAi] = useState(false);
 
     const dragItem = useRef();
     const dragOverItem = useRef();
@@ -109,10 +110,29 @@ export default function BoardComponent({ size }: { size: string }) {
     };
 
     useEffect(() => {
-        if (turn === "black") {
-            getAiMove(gameLogic);
+        const updater = () => {
+            setBoard((oldBoard) => [...gameLogic.getboard()]);
+        };
+
+        if (turn === "black" && !awaitingAi) {
+            setAwaitingAi(true);
+            setTimeout(() =>
+                gameLogic.testMode().then(() => {
+                    updater();
+                    setTurn(() => gameLogic.getPlayerMove());
+                    setAwaitingAi(false);
+                })
+            );
         }
-    });
+
+        window.addEventListener("move-made", updater);
+
+        return () => window.removeEventListener("move-made", updater);
+    }, [awaitingAi, gameLogic, board, turn]);
+
+    // if (turn === "black") {
+    //     getAiMove(gameLogic);
+    // }
 
     return (
         <div ref={ref} style={{ height: size, width: size, padding: 25 / 2 }}>

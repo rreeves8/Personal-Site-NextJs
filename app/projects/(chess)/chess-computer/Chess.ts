@@ -79,6 +79,7 @@ export default class ChessBoard {
         let moves = Array.from(this.peices, ([name, value]) => value).reduce((accumulator, current) => {
             if (current instanceof Peice && current.getPlayer() === turn) {
                 let oldPos = current.getPosition();
+
                 return accumulator.concat(
                     current.getValidMoves(this.board).map((move) => ({
                         oldPos: {
@@ -152,6 +153,7 @@ export default class ChessBoard {
         let opponent = this.turn === "white" ? "black" : "white";
 
         let king = this.peices.get("king-" + opponent) as Peice;
+
         let isCheck = peice.isCheck(this.board, king);
 
         if (isCheck) {
@@ -201,6 +203,7 @@ export default class ChessBoard {
                         this.check = undefined;
                         return true;
                     } else {
+                        console.error("cant move as checked and move does not resolve check");
                         return false;
                     }
                 }
@@ -222,8 +225,18 @@ export default class ChessBoard {
                 }
             }
 
+            console.error(
+                "errored cause: current position is instance of peice: ",
+                currentPosition instanceof Peice,
+                "   it is not the players turn: ",
+                player,
+                "   player does not equal this turn,",
+                player === this.turn
+            );
+
             return false;
         } else {
+            console.error("a winner is defined");
             return false;
         }
     }
@@ -246,36 +259,45 @@ export default class ChessBoard {
         let currentPeice = this.board[i][j] as Peice;
         let positionToMove = this.board[nextI][nextJ];
 
-        if (currentPeice instanceof King) {
-            if ((i === 0 && nextI === 0 && this.turn === "black") || (i === 7 && nextI === 7 && this.turn === "white")) {
-                if (!currentPeice.hasCastled) {
-                    //queen side
-                    let kingSide = nextJ < j ? currentPeice.queenSide : currentPeice.kingSide;
-                    let castle = this.peices.get("castle-" + (nextJ < j ? "" : "1-") + this.turn) as Castle;
-                    let castleSide = nextJ < j ? castle.queenSide : castle.kingSide;
-                    if (nextJ === kingSide[1] && j === kingSide[0]) {
-                        if (!castle.hasCastled && clearPath(this.board, i, j, nextI, nextJ)) {
-                            let castlePos = castle.getPosition();
-                            let kingPos = currentPeice.getPosition();
-                            this.updateFeilds(castlePos[0], castlePos[1], castlePos[0], castleSide[1]);
-                            this.updateFeilds(kingPos[0], kingPos[1], kingPos[0], kingSide[1]);
-                            currentPeice.hasCastled = true;
-                            castle.hasCastled = true;
-                        }
-                    }
-                } else {
-                    this.updateFeilds(i, j, nextI, nextJ);
-                }
-            }
-        } else {
-            this.updateFeilds(i, j, nextI, nextJ);
-        }
+        // if (currentPeice instanceof King) {
+        //     if ((i === 0 && nextI === 0 && this.turn === "black") || (i === 7 && nextI === 7 && this.turn === "white")) {
+        //         if (!currentPeice.hasCastled) {
+        //             //queen side
+        //             let kingPos = nextJ < j ? currentPeice.queenSide : currentPeice.kingSide;
+        //             let castle = this.peices.get("castle-" + (nextJ < j ? "" : "1-") + this.turn) as Castle;
+        //             let castlePos = nextJ < j ? castle.queenSide : castle.kingSide;
+        //             if (nextJ === kingPos[1] && j === kingPos[0]) {
+        //                 if (!castle.hasCastled && clearPath(this.board, i, j, nextI, nextJ)) {
+        //                     let castlePos = castle.getPosition();
+        //                     let kingPos = currentPeice.getPosition();
+        //                     this.updateFeilds(castlePos[0], castlePos[1], castlePos[0], castlePos[1]);
+        //                     this.updateFeilds(kingPos[0], kingPos[1], kingPos[0], kingPos[1]);
+        //                     currentPeice.hasCastled = true;
+        //                     castle.hasCastled = true;
+        //                 } else {
+        //                     console.error("castling issues");
+        //                 }
+        //             } else {
+        //                 console.error("castling issues");
+        //             }
+        //         } else {
+        //             this.updateFeilds(i, j, nextI, nextJ);
+        //         }
+        //     } else {
+        //         console.error("castling issues");
+        //     }
+        // } else {
 
-        if (currentPeice instanceof King || currentPeice instanceof Castle) {
-            currentPeice.hasCastled = true;
-        }
+        // }
+
+        // if (currentPeice instanceof King || currentPeice instanceof Castle) {
+        //     currentPeice.hasCastled = true;
+        // }
+
+        this.updateFeilds(i, j, nextI, nextJ);
 
         this.check = this.isCheck(currentPeice) ? currentPeice : undefined;
+
         if (this.check) {
             if (this.isCheckMate()) {
                 this.winner = this.turn;
@@ -312,5 +334,76 @@ export default class ChessBoard {
 
     getTurn() {
         return this.turn;
+    }
+
+    emitBoardChange() {
+        window.dispatchEvent(new CustomEvent("move-made"));
+    }
+
+    revertMove(i: number, j: number, nextI: number, nextJ: number, oldPeice: Peice | "") {
+        let peice = this.board[i][j] as Peice;
+        let newPosition = this.board[nextI][nextJ];
+
+        peice.updatePosition(nextI, nextJ);
+
+        if (oldPeice instanceof Peice) {
+            this.peices.set(oldPeice.getMapName(), oldPeice);
+        }
+
+        this.board[nextI][nextJ] = peice;
+        this.board[i][j] = oldPeice;
+    }
+
+    forceMakeMove(i: number, j: number, nextI: number, nextJ: number) {
+        let peice = this.board[i][j] as Peice;
+        let newPosition = this.board[nextI][nextJ];
+
+        peice.updatePosition(nextI, nextJ);
+
+        if (newPosition instanceof Peice) {
+            this.peices.delete(newPosition.getMapName());
+        }
+
+        this.board[nextI][nextJ] = peice;
+        this.board[i][j] = "";
+
+        return newPosition;
+    }
+
+    async testMode() {
+        let moves = this.getAllMovesCoordinates("black");
+
+        // for (const move of moves) {
+        //     let i = move.oldPos.i;
+        //     let j = move.oldPos.j;
+        //     let nextI = move.newPos.i;
+        //     let nextJ = move.newPos.j;
+        //     let oldPeice = this.board[nextI][nextJ];
+
+        //     await new Promise((resolve) => setTimeout(resolve, 200));
+
+        //     let wasMade = this.makeMove(i, j, nextI, nextJ, "black");
+        //     if (!wasMade) {
+        //         if (typeof this.check === "undefined") {
+        //             throw new Error("failed move");
+        //         }
+        //     }
+
+        //     this.emitBoardChange();
+
+        //     await new Promise((resolve) => setTimeout(resolve, 200));
+
+        //     this.revertMove(nextI, nextJ, i, j, oldPeice);
+        //     this.turn = "black";
+        //     await new Promise((resolve) => setTimeout(resolve, 200));
+        // }
+
+        let randomMove = moves[Math.floor(Math.random() * moves.length)];
+        let i = randomMove.oldPos.i;
+        let j = randomMove.oldPos.j;
+        let nextI = randomMove.newPos.i;
+        let nextJ = randomMove.newPos.j;
+
+        let wasMade = this.makeMove(i, j, nextI, nextJ, "black");
     }
 }
