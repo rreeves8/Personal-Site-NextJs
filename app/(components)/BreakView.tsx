@@ -10,9 +10,21 @@ type BreakComponentProps = {
     headerColor?: string;
     extraDelay?: number;
     marginTop: string;
+    threshold?: number;
+    style?: any;
 };
 
-export default function BreakComponent({ header, height, children, animatedDivStyle, headerColor, extraDelay, marginTop }: BreakComponentProps) {
+export default function BreakComponent({
+    header,
+    height,
+    children,
+    animatedDivStyle,
+    headerColor,
+    extraDelay,
+    marginTop,
+    threshold,
+    style,
+}: BreakComponentProps) {
     const currentRef = useRef(null);
     const [isVisible, setVisible] = useState(false);
     const [styles, api] = useSpring(() => ({ opacity: 0 }));
@@ -33,7 +45,7 @@ export default function BreakComponent({ header, height, children, animatedDivSt
                       }
                   },
                   {
-                      threshold: 0.7,
+                      threshold: threshold ? threshold : 0.7,
                   }
               );
     });
@@ -47,7 +59,10 @@ export default function BreakComponent({ header, height, children, animatedDivSt
     }, []);
 
     return (
-        <div ref={currentRef} style={{ width: "100%", height: height ? height : "25vh", textAlign: "center", marginTop: marginTop }}>
+        <div
+            ref={currentRef}
+            style={{ width: "100%", height: height ? height : "25vh", textAlign: "center", marginTop: marginTop, ...(style ? style : {}) }}
+        >
             {header ? (
                 <>
                     {typeof header === "string" ? (
@@ -72,6 +87,8 @@ export default function BreakComponent({ header, height, children, animatedDivSt
                     ...styles,
                     ...(animatedDivStyle ? animatedDivStyle : {}),
                     width: "100%",
+                    height: "100%",
+                    marginTop: 0,
                 }}
             >
                 {children ? children : <></>}

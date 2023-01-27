@@ -100,12 +100,8 @@ export default function BoardComponent({ size }: { size: string }) {
         let moveMade = gameLogic.makeMove(...oldPos, ...newPos, turn);
 
         if (moveMade) {
-            if (gameLogic.getWinner()) {
-                setWinner(gameLogic.getWinner() as Player);
-            } else {
-                setBoard((oldBoard) => [...gameLogic.getboard()]);
-                setTurn(() => gameLogic.getPlayerMove());
-            }
+            setBoard((oldBoard) => [...gameLogic.getboard()]);
+            setTurn(() => gameLogic.getPlayerMove());
         }
     };
 
@@ -114,7 +110,9 @@ export default function BoardComponent({ size }: { size: string }) {
             setBoard((oldBoard) => [...gameLogic.getboard()]);
         };
 
-        if (turn === "black" && !awaitingAi) {
+        if (gameLogic.getWinner()) {
+            setWinner(gameLogic.getWinner() as Player);
+        } else if (turn === "black" && !awaitingAi) {
             setAwaitingAi(true);
             setTimeout(() =>
                 gameLogic.testMode().then(() => {
@@ -136,6 +134,12 @@ export default function BoardComponent({ size }: { size: string }) {
 
     return (
         <div ref={ref} style={{ height: size, width: size, padding: 25 / 2 }}>
+            {winner ? (
+                <text style={{ fontSize: "xx-large", fontFamily: "Brandon Grotesque Regular, sans-serif", position: "relative" }}>white</text>
+            ) : (
+                <></>
+            )}
+
             <div
                 style={{
                     display: "flex",

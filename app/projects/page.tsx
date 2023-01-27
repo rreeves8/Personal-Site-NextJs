@@ -18,25 +18,24 @@ const params = typeof window !== "undefined" ? new URLSearchParams(window.locati
 
 export default function Projects() {
     const chessRef = useRef(null);
-    const router = useRouter()
+    const router = useRouter();
     useEffect(() => {
         if (params.has("game")) {
             if (params.get("game") === "chess") {
                 //@ts-ignore
-                //chessRef.current.scrollIntoView();
+                chessRef.current.scrollIntoView();
             }
         }
     });
 
     return (
         <>
-            <FallingCat />
-            <Button style={{ position: "absolute", top: "2.5vh", left: "2.5vh" }} color="primary" size="regular" onClick={() => router.back()}>
+            <Button style={{ position: "absolute", top: "2.5vh", left: "2.5vh" }} color="primary" size="regular" onClick={() => router.replace("/")}>
                 Back To Main
             </Button>
 
             <BreakComponent
-                marginTop="8vh"
+                marginTop="5vh"
                 height="fit-content"
                 header={
                     <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
@@ -46,7 +45,7 @@ export default function Projects() {
                     </div>
                 }
             >
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "4vh" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "4vh", marginTop: "3vh" }}>
                     <text style={{ fontSize: "x-large", fontFamily: "Brandon Grotesque Regular, sans-serif", width: "50vw" }}>
                         Here&apos;s a collection of projects I&apos;ve worked on in the past. Using a Unity webpack compiler, virtualized IOS
                         simulators, and React; I&apos;ve collected some of my favourite projects to showcase. Checkout my github at:
@@ -112,7 +111,6 @@ export default function Projects() {
                 }
             >
                 <div
-                    ref={chessRef}
                     style={{
                         width: "100%",
                         height: "100%",
@@ -151,7 +149,7 @@ export default function Projects() {
                     marginTop="5vh"
                     header={
                         <div style={{ position: "absolute", width: "100%" }}>
-                            <text style={{ fontSize: "xxx-large", fontFamily: "Brandon Grotesque bold, sans-serif", color: "white" }}>
+                            <text style={{ fontSize: "xx-large", fontFamily: "Brandon Grotesque bold, sans-serif", color: "white" }}>
                                 App Development
                             </text>
                         </div>
@@ -197,8 +195,8 @@ export default function Projects() {
                 marginTop="2.5vh"
                 height="fit-content"
                 header={
-                    <div ref={chessRef} style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-                        <text style={{ fontSize: "xxx-large", fontFamily: "Brandon Grotesque bold, sans-serif" }}>Web Development</text>
+                    <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                        <text style={{ fontSize: "xx-large", fontFamily: "Brandon Grotesque bold, sans-serif" }}>Web Development</text>
                     </div>
                 }
             >
@@ -245,7 +243,10 @@ export default function Projects() {
                     }}
                 >
                     <text style={{ fontSize: "x-large", fontFamily: "Brandon Grotesque Regular, sans-serif", color: "white" }}>
-                        Check out the repo for this website here: <a href="https://github.com/rreeves8/personal-site-nextjs">Repo</a>
+                        Check out the repo for this website here:{" "}
+                        <a href="https://github.com/rreeves8/personal-site-nextjs" target="_blank" rel="noreferrer">
+                            Repo
+                        </a>
                     </text>
                 </div>
             </BreakComponent>
